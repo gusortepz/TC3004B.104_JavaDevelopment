@@ -1,11 +1,12 @@
 package excercise1;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Library {
     private String name;
     private List<Book> books;
-    private List<Patrons> patrons;
+    private List<Patron> patrons;
 
     public Library(String name) {
         this.name = name;
@@ -15,6 +16,10 @@ public class Library {
 
     public String getName() {
         return name;
+    }
+
+    public List<Book> getBooks() {
+        return books;
     }
 
     public void addBook(String title, String author, int isbn, int copies) {
@@ -36,8 +41,6 @@ public class Library {
         }
     }
 
-
-
     public void DisplayBooks() {
         if (books.size() == 0) {
             System.out.println("\nNo books in the library");
@@ -55,24 +58,25 @@ public class Library {
 
     public String cleanTitle (String title) {
         for (int i = 0; i < title.length(); i++) {
-            if (title.charAt(i) == ' ' || title.charAt(i) == '.' || title.charAt(i) == ',' || title.charAt(i) == ';' || title.charAt(i) == ':' || title.charAt(i) == '-' || title.charAt(i) == '_' || title.charAt(i) == '(' || title.charAt(i) == ')' || title.charAt(i) == '\'' || title.charAt(i) == '"' || title.charAt(i) == '!' || title.charAt(i) == '?' || title.charAt(i) == '¿' || title.charAt(i) == '¡') {
-                title = title.substring(0, i) + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'á') {
-                title = title.substring(0, i) + "a" + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'é') {
-                title = title.substring(0, i) + "e" + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'í') {
-                title = title.substring(0, i) + "i" + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'ó') {
-                title = title.substring(0, i) + "o" + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'ú') {
-                title = title.substring(0, i) + "u" + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'ñ') {
-                title = title.substring(0, i) + "n" + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'ü') {
-                title = title.substring(0, i) + "u" + title.substring(i + 1, title.length());
-            } else if (title.charAt(i) == 'ç') {
-                title = title.substring(0, i) + "c" + title.substring(i + 1, title.length());
+            char c = title.charAt(i);
+            if (" .,;:-_()'\"!?¿¡".indexOf(c) >= 0) {
+                title = title.substring(0, i) + title.substring(i + 1);
+            } else if (c == 'á') {
+                title = title.substring(0, i) + "a" + title.substring(i + 1);
+            } else if (c == 'é') {
+                title = title.substring(0, i) + "e" + title.substring(i + 1);
+            } else if (c == 'í') {
+                title = title.substring(0, i) + "i" + title.substring(i + 1);
+            } else if (c == 'ó') {
+                title = title.substring(0, i) + "o" + title.substring(i + 1);
+            } else if (c == 'ú') {
+                title = title.substring(0, i) + "u" + title.substring(i + 1);
+            } else if (c == 'ñ') {
+                title = title.substring(0, i) + "n" + title.substring(i + 1);
+            } else if (c == 'ü') {
+                title = title.substring(0, i) + "u" + title.substring(i + 1);
+            } else if (c == 'ç') {
+                title = title.substring(0, i) + "c" + title.substring(i + 1);
             }
         }
         return title;
@@ -101,7 +105,6 @@ public class Library {
             System.out.println("No books in the library");
             return;
         }
-
         int index = findBook();
         books.remove(index);
     }
@@ -137,7 +140,17 @@ public class Library {
 
     public int addPatron(String name, String email, String phone) {
         int id = patrons.size() + 1;
-        patrons.add(new Patrons(id, name, email, phone));
+        patrons.add(new Patron(id, name, email, phone, this));
+        return 1;
+    }
+
+    public int addPatron(int id, String name, String email, String phone, Library library) {
+        patrons.add(new Patron(id, name, email, phone, library));
+        return 1;
+    }
+
+    public int addPatron(Patron patron) {
+        patrons.add(patron);
         return 1;
     }
 
@@ -147,7 +160,7 @@ public class Library {
         }
     }
     
-    public void displaySinglePatron(Patrons patron) {
+    public void displaySinglePatron(Patron patron) {
         System.out.println(patron.getName() + " ID: " + patron.getId() + " Email: " + patron.getEmail() + " Phone: " + patron.getPhone());
     }
 
@@ -216,20 +229,16 @@ public class Library {
         if (patronIndex == -1) {
             return;
         }
-
         int bookIndex = findBook();
         if (bookIndex == -1) {
             return;
         }
-
         if (books.get(bookIndex).getCopies() == 0) {
             System.out.println("No copies available");
             return;
         }
-
         patrons.get(patronIndex).addBook(books.get(bookIndex));
         books.get(bookIndex).addCopies(-1);
-        return;
     }
 
     public void returnBook() {
@@ -237,22 +246,19 @@ public class Library {
         if (patronIndex == -1) {
             return;
         }
-
         System.out.println("Enter the book ISBN:");
         int bookISBN = Integer.parseInt(System.console().readLine());
         int confirmation = patrons.get(patronIndex).returnBook(bookISBN);
         if (confirmation == -1) {
             return;
         }
-
         books.get(findBook(bookISBN)).addCopies(1);
-        return;
     }
 
     public void booksPerPatron() {
         System.out.println("Do you want to display which books each patron has borrowed? (y/n)");
         String response = System.console().readLine();
-        for (Patrons patron : patrons) {
+        for (Patron patron : patrons) {
             System.out.println("Books borrowed by " + patron.getName() + ":" + patron.getBooks().size() + "\n");
             if (response.toLowerCase().equals("n")) {
                 continue;
@@ -267,7 +273,6 @@ public class Library {
         System.out.println("Enter the book title, author or ISBN: ");
         String search = System.console().readLine();
         search = cleanTitle(search.toLowerCase());
-
         for (Book book : books) {
             if (deepSearch(search, cleanTitle(book.concatData().toLowerCase())) == 1) {
                 DisplaySingleBook(book);
@@ -292,11 +297,50 @@ public class Library {
         if (patronIndex == -1) {
             return;
         }
-
         displaySinglePatron(patrons.get(patronIndex));
         System.out.println(patrons.get(patronIndex).getBooks().size() + " books borrowed: \n");
         for (Book book : patrons.get(patronIndex).getBooks()) {
             DisplaySingleBook(book);
         }
+    }
+
+    public List<Book> getBooksList() {
+        return books;
+    }
+
+    public List<Patron> getPatronsList() {
+        return patrons;
+    }
+
+    public synchronized boolean simulateBorrow(Patron patron, int isbn) {
+        int bookIndex = findBook(isbn);
+        if (bookIndex == -1) {
+            System.out.println("Libro con ISBN " + isbn + " no encontrado.");
+            return false;
+        }
+        Book book = books.get(bookIndex);
+        if (book.getCopies() > 0) {
+            book.addCopies(-1);
+            patron.addBook(book);
+            return true;
+        } else {
+            System.out.println("No hay copias disponibles para " + book.getTitle());
+            return false;
+        }
+    }
+
+    public synchronized boolean simulateReturn(Patron patron, int isbn) {
+        int index = patron.findBook(isbn);
+        if (index == -1) {
+            System.out.println("El libro con ISBN " + isbn + " no está en posesión del patron " + patron.getName());
+            return false;
+        }
+        patron.returnBook(isbn);
+        int libIndex = findBook(isbn);
+        if (libIndex != -1) {
+            books.get(libIndex).addCopies(1);
+            return true;
+        }
+        return false;
     }
 }

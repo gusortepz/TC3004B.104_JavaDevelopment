@@ -13,6 +13,27 @@ public class Book {
         this.author = author;
         this.isbn = isbn;
         this.copies = copies;
+        this.timesBorrowed = 0;
+        this.timesReturned = 0;
+    }
+
+    public synchronized boolean borrow() {
+        if (copies > 0) {
+            copies--;
+            timesBorrowed++;
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized void returned() {
+        copies++;
+        timesReturned++;
+    }
+
+    @Override
+    public String toString() {
+        return "Book: " + title + " by " + author + " [ISBN: " + isbn + "] Copies: " + copies;
     }
 
     public int getTimesBorrowed() {
